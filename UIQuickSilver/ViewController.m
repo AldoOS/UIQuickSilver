@@ -7,10 +7,11 @@
 //
 
 #import "ViewController.h"
+#import "UIQuickSilver.h"
 
 @interface ViewController ()
-@property (weak, nonatomic) IBOutlet NSLayoutConstraint *constraints;
 
+@property (weak, nonatomic) IBOutlet UIQuickSilver *quickSilver;
 @end
 
 @implementation ViewController
@@ -18,7 +19,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.constraints.constant = self.view.bounds.size.width/2;
+    self.quickSilver.animate = YES;
+    self.quickSilver.current = 20;
 }
 
 - (void)didReceiveMemoryWarning {

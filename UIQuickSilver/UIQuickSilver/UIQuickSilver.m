@@ -12,8 +12,6 @@
     
     UIView *silverView;
     NSLayoutConstraint *rightConstraint;
-//    CAShapeLayer *silverShape;
-//    UIBezierPath *silverLine;
 }
 @end
 
@@ -37,26 +35,30 @@
 
 - (void)setup {
     
-    _colorBackground = [UIColor whiteColor];
+    self.backgroundColor = [UIColor whiteColor];
     
-    _current = 75.0f;
-    _cornerRadius = self.bounds.size.height/2;
-    _borderColor = [UIColor grayColor];
-    _borderWidth = 1.0f;
+    // Layer Defaults
+    self.layer.masksToBounds = YES;
+    self.layer.backgroundColor = [UIColor whiteColor].CGColor;
+    self.layer.cornerRadius = 3.0f;
+    self.layer.borderWidth = 1.0f;
+    self.layer.borderColor = [UIColor grayColor].CGColor;
     
-    _silverColor = [UIColor grayColor];
-    
+    // Silver
     silverView = [[UIView alloc] initWithFrame:self.bounds];
-    silverView.backgroundColor = [UIColor greenColor];
-    silverView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     [self addSubview:silverView];
+    silverView.backgroundColor = [UIColor grayColor];
+
+    _animate = NO;
+    _current = 0.0f;
 }
 
 - (void)updateConstraints {
-
+    
     silverView.translatesAutoresizingMaskIntoConstraints = NO;
     
-    rightConstraint = [NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeTrailingMargin relatedBy:NSLayoutRelationEqual toItem:silverView attribute:NSLayoutAttributeTrailingMargin multiplier:1.0 constant:0.0];
+    rightConstraint = [NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeTrailingMargin relatedBy:NSLayoutRelationEqual toItem:silverView attribute:NSLayoutAttributeTrailingMargin multiplier:1.0 constant:self.bounds.size.width];
+    rightConstraint.priority = 999;
     
     [self addConstraints:@[
                            // Left
@@ -70,8 +72,6 @@
                            
                            // Bottom
                            [NSLayoutConstraint constraintWithItem:silverView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0]
-
-                           
                            ]];
     [super updateConstraints];
 }
@@ -79,46 +79,68 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
     
-    CGRect rect = self.bounds;
+    //_current = 50.0f;
     
-    self.backgroundColor = _colorBackground;
-
-    rightConstraint.constant = self.bounds.size.width - ((_current * self.bounds.size.width) / 100);
-
-    
-    self.layer.masksToBounds = YES;
-    self.layer.cornerRadius = (_cornerRadius < rect.size.height/2) ? _cornerRadius : rect.size.height/2;
-    self.layer.borderColor = _borderColor.CGColor;
-    self.layer.borderWidth = _borderWidth;
-    
-    silverView.backgroundColor = _silverColor;
+    if (_animate)
+        [UIView animateWithDuration:0.5 animations:^{
+            rightConstraint.constant = self.bounds.size.width - ((_current * self.bounds.size.width) / 100);
+            [self layoutIfNeeded];
+        }];
+    else {
+        rightConstraint.constant = self.bounds.size.width - ((_current * self.bounds.size.width) / 100);
+        [self layoutIfNeeded];
+    }
 }
 
 - (void)setCurrent:(CGFloat)current {
     _current = current;
-    
+    [self setNeedsLayout];
 }
 
-- (void)setCornerRadius:(CGFloat)cornerRadius {
-    _cornerRadius = cornerRadius;
-    //[self setNeedsLayout];
+- (void)setAnimate:(BOOL)animate {
+    _animate = animate;
+    [self setNeedsLayout];
 }
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     [super touchesBegan:touches withEvent:event];
     
-//    CGRect rect = silverView.frame;
-//    rect.size.width = self.bounds.size.width/2;
-//    silverView.frame = rect;
-//    [silverView setNeedsLayout];
-
-    [UIView animateWithDuration:0.5 animations:^{
-        CGFloat w = (_current * self.bounds.size.width) / 100;
-        w = self.bounds.size.width - w;
-        rightConstraint.constant = w;
-        [self layoutIfNeeded];
-    }];
-    
+    int r = arc4random() % 100;
+    self.current = r;
 }
+
+
+#pragma mark - Container Layer
+- (UIColor *)containerColor {
+    return [UIColor colorWithCGColor:self.layer.backgroundColor];
+}
+- (void)setContainerColor:(UIColor *)containerColor {
+    self.layer.backgroundColor = containerColor.CGColor;
+}
+- (CGFloat)cornerRadius {
+    return self.layer.cornerRadius;
+}
+- (void)setCornerRadius:(CGFloat)cornerRadius {
+    self.layer.cornerRadius = cornerRadius;
+}
+- (UIColor *)borderColor {
+    return [UIColor colorWithCGColor:self.layer.borderColor];
+}
+- (void)setBorderColor:(UIColor *)borderColor {
+    self.layer.borderColor = borderColor.CGColor;
+}
+- (CGFloat)borderWidth {
+    return self.layer.borderWidth;
+}
+- (void)setBorderWidth:(CGFloat)borderWidth {
+    self.layer.borderWidth = borderWidth;
+}
+
+#pragma mark - Silver
+//- (void)setSilverColor:(UIColor *)silverColor {
+//    _silverColor = silverColor;
+//    //[self setNeedsLayout];
+//}
+
 
 @end
